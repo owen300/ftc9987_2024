@@ -27,14 +27,11 @@ public class TiltSubsystem extends SubsystemBase
     //increase this value to increase the speed (and decrease the accuracy / increase inertia) of the tilt
     private static double PID_SPEED = 1;
     private static double KP = 0.004, KI = 0.0, kD = 0.0008;
-    private static double KF = 0.3;
-    private static double extensionConstant = 0.3;
-    private static double TICKS_IN_DEGREE = (1.75*1425.1)/360.0;
-    private static double TOLERANCE_PID = 10;
-    // tolerance where pid is calculated in ticks
-    private static double ACCEPTABLE_POSITION_TOLERANCE_DEGREES = 5;
-    // acceptable position tolerance in degrees
-    private static int HORIZONTAL_ENCODER_VALUE = 51;
+    private static double KF = 0.20;
+    private static double TICKS_IN_DEGREE = (2.8*1425.1)/360.0;
+    private static double TOLERANCE_PID = 1;
+    // tolerance where pid is calculated in degrees
+    private static int HORIZONTAL_ENCODER_VALUE = 20;
     // horizontal position of tilt when encoders are reset in the starting position
 
     private PIDController pid = new PIDController(KP, KI, kD);
@@ -59,9 +56,9 @@ public class TiltSubsystem extends SubsystemBase
         this.targetAngle = targetAngle;
     }
 
-    public boolean atTargetPosition()
+    public boolean atTargetPosition(double tolerance) // within tolerance of target position
     {
-        return abs(targetAngle - toAngle(tilt_motor.getCurrentPosition())) < ACCEPTABLE_POSITION_TOLERANCE_DEGREES;
+        return abs(targetAngle - toAngle(tilt_motor.getCurrentPosition())) < tolerance;
     }
 
     private int toEncoder(double angle)
@@ -83,20 +80,21 @@ public class TiltSubsystem extends SubsystemBase
         int currentPos = tilt_motor.getCurrentPosition();
         // current position relative to the arm starting position
 
-        double currentAngle = toAngleFeedforward(currentPos);
+        double currentAngle = toAngle(currentPos);
         // current angle relative to the arm starting position
 
         int targetPosition = toEncoder(targetAngle);
         // target position relative to the arm starting position
 
         // always compensates for gravity
-        double ffOutput = KF*Math.cos(Math.toRadians(currentAngle)) *
-                (extensionConstant*ExtensionSubsystem.getCurrentPosition());
+        double ffOutput = KF*Math.cos(Math.toRadians(currentAngle));/* *
+                (ExtensionSubsystem.getCurrentPosition());*/ //TODO: add extension
         double pidOutput = 0;
 
         //calculates pid if not at target position
-        if(!pid.atSetPoint()) pidOutput = this.pid.calculate(currentPos, targetPosition)*PID_SPEED;
+        if(!atTargetPosition(TOLERANCE_PID)) pidOutput = this.pid.calculate(currentPos, targetPosition)*PID_SPEED;
         output = ffOutput + pidOutput;
+        //output=ffOutput;//test feedforward
 
         telemetry.addData("ff: ", ffOutput);
         telemetry.addData("pid: ", pidOutput);

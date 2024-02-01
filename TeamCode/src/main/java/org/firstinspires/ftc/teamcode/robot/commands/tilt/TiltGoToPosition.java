@@ -14,6 +14,8 @@ public class TiltGoToPosition extends CommandBase
     public static int AUTO_DEPOSIT = 0; // kooky-deposit angle
     public static  int AUTO_STACK_INTAKE1 = 0; // top two pixels off stacks
     public static int AUTO_STACK_INTAKE2 = 0; // 3rd and 4th pixels off stacks
+    private static double ACCEPTABLE_POSITION_TOLERANCE_DEGREES = 25;
+    // acceptable position tolerance for commands in degrees
 
     private final TiltSubsystem tiltSubsystem;
     private final double targetAngle;
@@ -34,6 +36,6 @@ public class TiltGoToPosition extends CommandBase
     @Override
     public boolean isFinished()
     {
-        return tiltSubsystem.atTargetPosition();
+        return tiltSubsystem.atTargetPosition(ACCEPTABLE_POSITION_TOLERANCE_DEGREES);
     }
 }

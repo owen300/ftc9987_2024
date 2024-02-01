@@ -9,11 +9,12 @@ import org.firstinspires.ftc.teamcode.robot.subsystems.WristSubsystem;
 import java.util.concurrent.TimeUnit;
 
 public class WristStow extends CommandBase {
+    private final int TIME_TO_POSITION = 1000;
     private final WristSubsystem wristSubsystem;
     Timing.Timer timer;
     public WristStow(WristSubsystem subsystem)
     {
-//        this.timer = new Timing.Timer(1000, TimeUnit.MILLISECONDS);
+        this.timer = new Timing.Timer(TIME_TO_POSITION, TimeUnit.MILLISECONDS);
         wristSubsystem = subsystem;
         addRequirements(wristSubsystem);
     }
@@ -26,6 +27,6 @@ public class WristStow extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return true;
+        return timer.done();
     }
 }
